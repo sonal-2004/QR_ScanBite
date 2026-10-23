@@ -73,13 +73,6 @@ python generate_qr.py
 
 This creates `scanbite_qr.png`. Scan it with a phone and test the customer ordering flow before printing it.
 
-## Security and GitHub
-
-- Do not upload `database.db`, virtual environments, `.env` files, real passwords, secret keys, or customer/order data.
-- `.gitignore` excludes common local/private files.
-- Never use a default/demo admin password on a public deployment.
-- If a password or secret was ever committed to a public repository, change it immediately. Removing it in a later commit does not erase it from Git history.
-
 ## Project structure
 
 ```text

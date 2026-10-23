@@ -90,3 +90,35 @@ ScanBite/
     ├── js/
     └── images/
 ```
+
+---
+
+# 📸 ScanBite Project Screenshots
+
+## 🛍️ Customer Website
+
+### Home Page
+![ScanBite Home Page](screenshots/ScanBite_HomePage.png)
+
+### Menu Page
+![ScanBite Menu Page](screenshots/MenuPage.png)
+
+### Add to Cart
+![ScanBite Add to Cart](screenshots/AddToCartPage.png)
+
+## 🔐 Admin Dashboard
+
+### Admin Login
+![Admin Login](screenshots/admindashboardlogin.png)
+
+### Admin Dashboard
+![Admin Dashboard](screenshots/AdminDashboard.png)
+
+### Menu Management
+![Menu Management](screenshots/MenuManagement.png)
+
+### Inventory Management
+![Inventory](screenshots/Inventory.png)
+
+### Inventory Details
+![Inventory Details](screenshots/Inventory1.png)

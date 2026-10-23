@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+```
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>ScanBite Kitchen</title>
+
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/dashboard.css') }}">
+```
+
+</head>
+
+<body>
+
+<div class="dashboard-shell">
+
+```
+<!-- Header -->
+
+<header class="topbar">
+
+    <div>
+        <h1>👨‍🍳 ScanBite Kitchen</h1>
+        <p>Kitchen Order Board</p>
+    </div>
+
+    <div class="top-links">
+        <a href="/admin">Admin</a>
+        <a href="/menu">Customer Menu</a>
+    </div>
+
+</header>
+
+
+<!-- Orders -->
+
+<main class="content">
+
+    <section class="kitchen-grid"
+             id="kitchenOrders">
+
+        <div class="empty-card">
+            Loading orders...
+        </div>
+
+    </section>
+
+</main>
+```
+
+</div>
+
+<script>
+
+
+async function loadKitchen() {
+
+    const response = await fetch("/api/dashboard");
+
+    const data = await response.json();
+
+    let activeOrders = [];
+
+    for (let order of data.orders) {
+
+        if (order.status !== "Completed") {
+
+            activeOrders.push(order);
+
+        }
+
+    }
+
+
+    let ordersHTML = "";
+
+
+    for (let order of activeOrders) {
+
+        let itemsHTML = "";
+
+        for (let item of order.items) {
+
+            itemsHTML += `
+                <div>
+                    <span>${item.item_name}</span>
+                    <strong>× ${item.quantity}</strong>
+                </div>
+            `;
+
+        }
+
+
+        let button = "";
+
+
+        if (order.status === "Pending") {
+
+            button = `
+                <button onclick="setStatus(${order.id}, 'Preparing')">
+                    Start Preparing
+                </button>
+            `;
+
+        }
+        else if (order.status === "Preparing") {
+
+            button = `
+                <button onclick="setStatus(${order.id}, 'Ready')">
+                    Mark Ready
+                </button>
+            `;
+
+        }
+        else if (order.status === "Ready") {
+
+            button = `
+                <button onclick="setStatus(${order.id}, 'Completed')">
+                    Complete Order
+                </button>
+            `;
+
+        }
+        ordersHTML += `
+
+            <article class="order-card">
+
+                <div class="order-head">
+
+                    <div>
+
+                        <span class="order-number">
+                            #${order.order_no}
+                        </span>
+
+                        <span class="table-pill">
+                            Table ${order.table_number}
+                        </span>
+
+                    </div>
+
+
+                    <span class="badge">
+                        ${order.status}
+                    </span>
+
+                </div>
+
+
+                <h2>${order.customer_name}</h2>
+
+
+                <p class="muted">
+                    ${order.phone} · ${order.created_at}
+                </p>
+
+
+                <div class="items">
+
+                    ${itemsHTML}
+
+                </div>
+
+
+                <div class="order-bottom">
+
+                    <strong>
+                        Total ₹${order.total}
+                    </strong>
+
+                    <div class="actions">
+
+                        ${button}
+
+                    </div>
+
+                </div>
+
+            </article>
+
+        `;
+
+    }
+
+    if (ordersHTML === "") {
+
+        ordersHTML = `
+            <div class="empty-card">
+                No active orders.
+            </div>
+        `;
+
+    }
+
+
+    document.getElementById("kitchenOrders").innerHTML =
+        ordersHTML;
+
+}
+
+
+async function setStatus(orderId, newStatus) {
+
+    const response = await fetch(
+        "/api/orders/" + orderId + "/status",
+        {
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                status: newStatus
+            })
+        }
+    );
+
+
+    const data = await response.json();
+
+
+    if (response.ok) {
+
+        loadKitchen();
+
+    }
+    else {
+
+        alert(data.message);
+
+    }
+
+}
+
+loadKitchen();
+
+</script>
+
+</body>
+
+</html>

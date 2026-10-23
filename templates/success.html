@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>Order Success</title>
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/header.css') }}">
+
+<style>
+
+*{
+
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Poppins,sans-serif;
+
+}
+
+body{
+
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+background:#f7f7f7;
+
+}
+
+.card{
+
+background:white;
+padding:45px;
+width:420px;
+text-align:center;
+border-radius:25px;
+box-shadow:0 10px 25px rgba(0,0,0,.15);
+
+}
+
+.circle{
+
+width:90px;
+height:90px;
+background:#4CAF50;
+border-radius:50%;
+margin:auto;
+display:flex;
+justify-content:center;
+align-items:center;
+font-size:45px;
+color:white;
+
+}
+
+h1{
+
+margin:20px 0;
+color:#4CAF50;
+
+}
+
+.order{
+
+font-size:24px;
+font-weight:bold;
+margin:20px 0;
+
+}
+
+.time{
+
+font-size:22px;
+color:#6F4E37;
+margin-bottom:20px;
+
+}
+
+button{
+
+padding:15px 35px;
+border:none;
+background:#6F4E37;
+color:white;
+border-radius:40px;
+font-size:18px;
+cursor:pointer;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+
+<div class="card">
+
+<div class="circle">
+
+✓
+
+</div>
+
+<h2>🎉 Order Confirmed</h2>
+
+<h1>Order No. {{ order_no }}</h1>
+
+<h3>Estimated Time</h3>
+
+<p>12 - 15 mins</p>
+
+<p>
+Please collect your order when your order number is announced.
+</p>
+
+<h3>Thank You ❤️</h3>
+
+<br>
+
+<button onclick="window.location='/'">
+
+Done
+
+</button>
+
+</div>
+
+</body>
+
+</html>

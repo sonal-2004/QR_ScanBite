@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Scan Bite</title>
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/style.css') }}">
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+</head>
+
+<body>
+
+<section class="hero">
+
+<div class="overlay">
+
+<nav>
+
+<div class="logo">
+
+<img src="{{ url_for('static', filename='images/scanbite.png') }}">
+
+
+
+</div>
+
+<ul>
+
+<li><a href="/">Home</a></li>
+<li><a href="/menu">Menu</a></li>
+<li><a href="/combo">Offers</a></li>
+
+</ul>
+
+<a href="/cart" class="cartBtn">
+
+<i class="fa-solid fa-cart-shopping"></i>
+
+Cart
+
+</a>
+
+</nav>
+
+
+<div class="heroContent">
+
+<div class="left">
+
+<h1>
+
+Scan.<br>
+
+Order.<br>
+
+<span>Savor.</span>
+
+</h1>
+
+<p>
+
+Skip the queue and enjoy your favourite coffee.
+Simply scan the QR code, browse the menu,
+customize your order and relax while we prepare it fresh.
+
+</p>
+
+<a href="/menu" class="menuBtn">
+
+<i class="fa-solid fa-qrcode"></i>
+
+View Menu
+
+</a>
+
+</div>
+
+
+<div class="right">
+
+<img src="{{ url_for('static', filename='images/UIScanBite.png') }}">
+
+</div>
+
+</div>
+
+
+<div class="steps">
+
+<div class="step">
+
+<div class="icon">
+
+<i class="fa-solid fa-qrcode"></i>
+
+</div>
+
+<h3>Scan QR</h3>
+
+<p>Scan QR code placed on your table.</p>
+
+</div>
+
+
+<div class="step">
+
+<div class="icon">
+
+<i class="fa-solid fa-book-open"></i>
+
+</div>
+
+<h3>Choose Items</h3>
+
+<p>Select your favourite dishes.</p>
+
+</div>
+
+
+<div class="step">
+
+<div class="icon">
+
+<i class="fa-solid fa-credit-card"></i>
+
+</div>
+
+<h3>Place Order</h3>
+
+<p>Order directly from your phone.</p>
+
+</div>
+
+
+<div class="step">
+
+<div class="icon">
+
+<i class="fa-solid fa-mug-hot"></i>
+
+</div>
+
+<h3>Relax</h3>
+
+<p>Your food will be served shortly.</p>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+</body>
+</html>

@@ -1,0 +1,309 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Your Cart</title>
+
+
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/header.css') }}">
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/cart.css') }}">
+
+</head>
+
+<body>
+
+
+<div class="container">
+
+<!-- Header -->
+
+<div class="header">
+
+<div class="back" onclick="window.location='/menu'">
+<i class="fa-solid fa-arrow-left"></i>
+</div>
+
+<div class="title">
+
+<h1>
+☕ Your Cart
+</h1>
+
+<p>Good food, good mood!</p>
+
+</div>
+
+<div class="clear" onclick="clearCart()">
+<i class="fa-regular fa-trash-can"></i>
+</div>
+
+</div>
+
+<!-- Cart Items -->
+
+<div id="cartItems">
+
+</div>
+
+<!-- Summary -->
+
+<div class="summary">
+
+<div class="row">
+<span>Subtotal</span>
+<span id="subtotal">₹0</span>
+</div>
+
+<div class="row discount">
+<span>Discount</span>
+<span id="discount">-₹0</span>
+</div>
+
+<div class="row">
+<span>GST (5%)</span>
+<span id="gst">₹0</span>
+</div>
+
+<hr>
+
+<div class="row total">
+
+<h2>Total</h2>
+
+<h2 id="total">₹0</h2>
+
+</div>
+
+<p class="saved">
+
+You saved ₹50
+
+</p>
+
+</div>
+
+<!-- Customer Details -->
+
+<div class="customer-form">
+
+<h2>Customer Details</h2>
+
+<input type="text" id="customerName" placeholder="Your Name" required>
+
+<input type="tel" id="customerPhone" placeholder="10-digit Phone Number" inputmode="numeric" maxlength="10" pattern="[0-9]{10}" autocomplete="tel" required>
+
+<input type="email" id="customerEmail" placeholder="Email (optional)">
+
+<input type="text" id="tableNumber" placeholder="Table Number" required>
+
+</div>
+
+<!-- Checkout -->
+
+<button class="checkout" onclick="checkout()">
+
+<span>
+
+<i class="fa-solid fa-bag-shopping"></i>
+
+Proceed to Order
+
+</span>
+
+<span id="checkoutPrice">
+
+₹0
+
+</span>
+
+</button>
+
+<!-- Bottom Navigation -->
+
+<div class="bottom-nav">
+
+<a href="/">
+<i class="fa-solid fa-house"></i>
+<p>Home</p>
+</a>
+
+<a href="/menu">
+<i class="fa-solid fa-book-open"></i>
+<p>Menu</p>
+</a>
+
+<a class="active">
+<i class="fa-solid fa-cart-shopping"></i>
+<p>Cart</p>
+</a>
+
+</div>
+
+</div>
+
+<script>
+
+let cart = JSON.parse(sessionStorage.getItem("cart")) || [];
+
+function saveCart() {
+    sessionStorage.setItem("cart", JSON.stringify(cart));
+}
+
+function displayCart(){
+
+    let html="";
+    let subtotal=0;
+
+    cart.forEach((item,index)=>{
+
+        subtotal += Number(item.price) * Number(item.qty);
+
+        html += `
+        <div class="card">
+            <div class="left">
+                <img src="${item.image}">
+            </div>
+
+            <div class="middle">
+                <h2>${item.name}</h2>
+                <p class="rating">⭐ 4.8</p>
+                <p class="desc">Freshly prepared with premium ingredients.</p>
+                <h3>₹${item.price}</h3>
+            </div>
+
+            <div class="right">
+                <div class="delete" onclick="removeItem(${index})">
+                    <i class="fa-regular fa-trash-can"></i>
+                </div>
+
+                <div class="qty">
+                    <button onclick="decrease(${index})">-</button>
+                    <span>${item.qty}</span>
+                    <button onclick="increase(${index})">+</button>
+                </div>
+
+                <h2>₹${Number(item.price) * Number(item.qty)}</h2>
+            </div>
+        </div>`;
+    });
+
+    document.getElementById("cartItems").innerHTML = html;
+
+    let discount = subtotal >= 500 ? 50 : 0;
+    let gst = Math.round((subtotal-discount)*0.05);
+    let total = subtotal - discount + gst;
+
+    document.getElementById("subtotal").innerHTML="₹"+subtotal;
+    document.getElementById("discount").innerHTML="-₹"+discount;
+    document.getElementById("gst").innerHTML="₹"+gst;
+    document.getElementById("total").innerHTML="₹"+total;
+    document.getElementById("checkoutPrice").innerHTML="₹"+total;
+}
+
+function increase(i){
+    cart[i].qty++;
+    saveCart();
+    displayCart();
+}
+
+function decrease(i){
+    if(cart[i].qty > 1){
+        cart[i].qty--;
+    }
+    saveCart();
+    displayCart();
+}
+
+function removeItem(i){
+    cart.splice(i,1);
+    saveCart();
+    displayCart();
+}
+
+function clearCart(){
+    cart=[];
+    sessionStorage.removeItem("cart");
+    sessionStorage.removeItem("cartTime");
+    displayCart();
+}
+
+async function checkout(){
+
+    if(cart.length === 0){
+        alert("Your cart is empty!");
+        return;
+    }
+
+    const name = document.getElementById("customerName").value.trim();
+    const phone = document.getElementById("customerPhone").value.trim();
+    const email = document.getElementById("customerEmail").value.trim();
+    const tableNumber = document.getElementById("tableNumber").value.trim();
+
+    if(!name || !phone || !tableNumber){
+        alert("Please enter your name, phone number and table number.");
+        return;
+    }
+
+    if(!/^\d{10}$/.test(phone)){
+        alert("Please enter a valid 10-digit phone number.");
+        document.getElementById("customerPhone").focus();
+        return;
+    }
+
+    const checkoutButton = document.querySelector(".checkout");
+    checkoutButton.disabled = true;
+    checkoutButton.innerText = "Placing Order...";
+
+    try {
+
+        const response = await fetch("/place_order", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                name: name,
+                phone: phone,
+                email: email,
+                table_number: tableNumber,
+                items: cart
+            })
+        });
+
+        const result = await response.json();
+
+        if(!response.ok || !result.success){
+            throw new Error(result.message || "Unable to place order.");
+        }
+
+        sessionStorage.removeItem("cart");
+        sessionStorage.removeItem("cartTime");
+
+        window.location.href = "/success?order_no=" + result.order_no;
+
+    } catch(error) {
+
+        alert(error.message);
+        checkoutButton.disabled = false;
+        displayCart();
+    }
+}
+
+displayCart();
+
+</script>
+
+</body>
+</html>

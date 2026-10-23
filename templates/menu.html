@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ScanBite</title>
+
+    <link rel="stylesheet"
+href="{{ url_for('static', filename='css/header.css') }}">
+
+    <link rel="stylesheet"
+        href="{{ url_for('static', filename='css/menu.css') }}">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+    <link rel="stylesheet"
+href="{{ url_for('static', filename='css/popup.css') }}">
+
+</head>
+
+<body>
+
+{% include "header.html" %}
+
+<!-- Search -->
+
+<div class="search-box">
+
+    <input
+        type="text"
+        id="search"
+        placeholder="Search Coffee, Pizza, Burger..."
+        onkeyup="searchMenu()">
+
+</div>
+<!-- Banner Slider -->
+
+<div class="slider" id="slider">
+
+    <div class="slides">
+
+        <img src="{{ url_for('static', filename='images/banner1.png') }}">
+        <img src="{{ url_for('static', filename='images/banner2.png') }}">
+        <img src="{{ url_for('static', filename='images/banner3.png') }}">
+
+    </div>
+
+</div>
+
+<!-- Categories -->
+<div class="title"><h3 class="categories-title">Categories</h3></div>
+<div class="categories" id="categories">
+
+{% for c in category_meta %}
+
+    <div class="category" onclick="filterMenu('{{ c.name }}')">
+
+        <img src="{{ url_for('static', filename=c.image) }}">
+
+        <span>{{ c.emoji or '🍽️' }}</span>
+
+        <p>{{ c.name }}</p>
+
+    </div>
+
+{% endfor %}
+
+</div>
+
+<!-- Today's Specials -->
+
+<section class="special-section">
+
+    <h2 class="section-title">Today's Specials</h2>
+
+    <div class="special-cards">
+
+        <div class="special-card">
+            <img src="{{ url_for('static', filename='images/iced_latte.jpeg') }}">
+            <div class="special-info">
+                <h3>Iced Latte</h3>
+                <p>Cool • Smooth • Refreshing</p>
+
+                <div class="price-row">
+                    <span>₹149</span>
+
+                    <button onclick="addToCart('Iced Latte',149,'{{ url_for('static', filename='images/iced_latte.jpeg') }}')">
+                        +
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="special-card">
+            <img src="{{ url_for('static', filename='images/chickenburger.jpeg') }}">
+            <div class="special-info">
+                <h3>Classic Burger</h3>
+                <p>Juicy • Cheesy • Delicious</p>
+
+                <div class="price-row">
+                    <span>₹199</span>
+
+                    <button onclick="openPopup('Classic Burger',199,'{{ url_for('static', filename='images/chickenburger.jpeg') }}','Burger')">
+                        +
+                    </button>
+
+                </div>
+
+            </div>
+        </div>
+
+        <div class="special-card">
+            <img src="{{ url_for('static', filename='images/chocolatecake.jpeg') }}">
+            <div class="special-info">
+                <h3>Choco Lava Cake</h3>
+                <p>Warm • Gooey • Irresistible</p>
+
+                <div class="price-row">
+                    <span>₹149</span>
+
+                    <button onclick="addToCart('Choco Lava Cake',149,'{{ url_for('static', filename='images/pancakes.jpeg') }}')">
+                        +
+                    </button>
+
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</section>
+<section class="combo-offer">
+
+    <div class="combo-left">
+
+        <small>Combo Offer</small>
+
+        <h2>Buy 2 Get 1 Free!</h2>
+
+        <p>On selected items</p>
+
+        <a href="/combo" class="combo-btn">
+    Order Now
+</a>
+
+    </div>
+
+    <div class="combo-right">
+
+        <img src="{{ url_for('static', filename='images/burgercombo.png') }}">
+
+    </div>
+
+</section>
+
+
+
+
+<!-- <div class="products" id="products"> -->
+<div class="products" id="products">
+
+    {% for category, items in products.items() %}
+
+{% for p in items %}
+
+<div class="card" data-category="{{ category }}">
+
+    <img src="{{ url_for('static', filename=p.image) }}">
+
+    <div class="card-body">
+
+        <h4>{{ p.name }}</h4>
+
+        <p>⭐ {{ p.rating }}</p>
+
+        <div class="bottom">
+
+            <h3>₹ {{ p.price }}</h3>
+
+            {% if category=="Burger" or category=="Pizza" %}
+
+            <button onclick="openPopup('{{ p.name }}', {{ p.price }}, '{{ url_for('static', filename=p.image) }}', '{{ category }}')">
+                Add
+            </button>
+
+            {% else %}
+
+            <button onclick="addToCart('{{ p.name }}', {{ p.price }}, '{{ url_for('static', filename=p.image) }}')">
+                Add
+            </button>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endfor %}
+
+{% endfor %}
+
+</div>
+
+<!-- Floating Cart -->
+
+<script src="{{ url_for('static', filename='js/cart.js') }}"></script>
+<div id="floating-cart" class="floating-cart" onclick="openCart()">
+
+    <div class="cart-left">
+        <i class="fa-solid fa-cart-shopping"></i>
+
+        <div>
+            <span id="cart-count">0</span> Items
+        </div>
+    </div>
+
+    <div class="cart-right">
+
+        ₹<span id="cart-total">0</span>
+
+        <i class="fa-solid fa-angle-right"></i>
+
+    </div>
+
+</div>
+<script src="{{ url_for('static', filename='js/search.js') }}"></script>
+<script src="{{ url_for('static', filename='js/popup.js') }}"></script>
+<script src="{{ url_for('static', filename='js/category.js') }}?v=3"></script>
+
+<script>
+
+const slides = document.querySelector(".slides");
+const totalSlides = document.querySelectorAll(".slides img").length;
+
+let currentSlide = 0;
+
+setInterval(() => {
+
+    currentSlide++;
+
+    if(currentSlide >= totalSlides){
+        currentSlide = 0;
+    }
+
+    slides.style.transform = `translateX(-${currentSlide * 100}%)`;
+
+}, 2000);
+
+</script>
+<div id="popup" class="popup">
+
+<div class="popup-box">
+
+<span class="close" onclick="closePopup()">&times;</span>
+
+<img id="popupImage">
+
+<h2 id="popupName"></h2>
+
+<h3>
+
+₹ <span id="popupPrice"></span>
+
+</h3>
+
+<hr><br>
+<div id="burgerOptions">
+
+<h4>Bread</h4>
+
+<label>
+<input type="radio" name="bread" checked>
+Normal
+</label>
+
+<label>
+<input type="radio" name="bread">
+Whole Wheat
+</label>
+
+<br>
+
+<h4>Extra Cheese</h4>
+
+<label>
+<input type="checkbox" id="cheese">
+Extra Cheese (+₹30)
+</label>
+
+<br>
+
+<h4>Sauces</h4>
+
+<label>
+<input type="checkbox">
+BBQ
+</label>
+
+<label>
+<input type="checkbox">
+Mayo
+</label>
+
+<h4>Quantity</h4>
+
+<div class="qty">
+
+<button onclick="decreaseQty()">−</button>
+
+<span id="qty">1</span>
+
+<button onclick="increaseQty()">+</button>
+
+</div>
+
+<button class="popup-btn"
+
+onclick="addCustomizedItem()">
+
+Add To Cart
+
+</button>
+<div id="pizzaOptions" style="display:none;">
+
+<h4>Choose Size</h4>
+
+<label>
+<input type="radio" name="size" value="0" checked>
+Regular
+</label>
+
+<label>
+<input type="radio" name="size" value="80">
+Medium (+₹80)
+</label>
+
+<label>
+<input type="radio" name="size" value="150">
+Large (+₹150)
+</label>
+
+<br><br>
+
+<h4>Seasoning</h4>
+
+<label>
+<input type="checkbox" id="oregano">
+Oregano
+</label>
+
+<label>
+<input type="checkbox" id="flakes">
+Chilli Flakes
+</label>
+
+<label>
+<input type="checkbox" id="herbs">
+Mixed Herbs
+</label>
+
+<h4>Extra Cheese</h4>
+
+<label>
+
+<input type="checkbox" id="pizzaCheese">
+
+Extra Cheese (+₹50)
+
+</label>
+
+</div>
+</div>
+
+</div>
+</body>
+</html>

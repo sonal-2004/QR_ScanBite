@@ -1,0 +1,32 @@
+<header class="top-header">
+
+    <a href="{{ url_for('home') }}" class="back-btn">
+    <i class="fa-solid fa-arrow-left"></i>
+</a>
+
+    <div class="brand">
+
+        <img src="{{ url_for('static', filename='images/logo.png') }}">
+
+        <div>
+            <h1>Scan<span>Bite</span></h1>
+            <p>SCAN • ORDER • ENJOY</p>
+        </div>
+
+    </div>
+
+    <div class="header-actions">
+
+        {% if session.get("admin_id") %}
+        <a href="{{ url_for('admin_dashboard') }}" class="admin-dashboard-btn">
+            <i class="fa-solid fa-gauge-high"></i>
+            Admin Dashboard
+        </a>
+        {% endif %}
+
+        <a href="#" class="fav-btn">
+            <i class="fa-regular fa-heart"></i>
+        </a>
+
+    </div>
+</header>

@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+venv/
+.venv/
+env/
+
+# Environment variables / secrets
+.env
+.env.*
+!.env.example
+
+# Local database and backups (may contain customer/order/admin data)
+database.db
+database.db-*
+*.sqlite
+*.sqlite3
+*.db
+
+# Generated QR output
+scanbite_qr.png
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

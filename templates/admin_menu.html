@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Menu Management - ScanBite</title>
+<style>
+body{font-family:Arial,sans-serif;margin:0;background:#f7f3ee;color:#222}.top{background:#222;color:#fff;padding:18px 28px;display:flex;justify-content:space-between;align-items:center}.top a{color:#fff;text-decoration:none;margin-left:18px}.wrap{max-width:1200px;margin:28px auto;padding:0 18px}.panel{background:#fff;padding:22px;border-radius:16px;margin-bottom:22px;box-shadow:0 4px 18px #0000000d}form.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}input,select,textarea{padding:11px;border:1px solid #ddd;border-radius:9px;width:100%;box-sizing:border-box}textarea{min-height:70px}button{border:0;border-radius:8px;padding:10px 14px;cursor:pointer}.primary{background:#222;color:#fff}.danger{background:#fee;color:#a00}.full{grid-column:1/-1}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:12px;border-bottom:1px solid #eee}td img{width:48px;height:48px;object-fit:cover;border-radius:8px}.actions{display:flex;gap:8px;flex-wrap:wrap}.muted{color:#777}
+.upload-box{grid-column:1/-1;min-height:180px;border:2px dashed #ccc;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:.2s;background:#fafafa;text-align:center;box-sizing:border-box;padding:18px}.upload-box:hover,.upload-box.dragover{border-color:#222;background:#f1f1f1}.upload-icon{font-size:36px;margin-bottom:8px}.upload-title{font-size:17px;font-weight:600}.upload-or{color:#777;margin:6px 0}.choose-btn{background:#222;color:#fff;padding:9px 18px;border-radius:8px;font-size:14px}.file-name{margin-top:10px;color:#555;font-size:13px}.image-preview{display:none;width:110px;height:110px;object-fit:cover;border-radius:10px;margin-top:12px}
+@media(max-width:700px){form.grid{grid-template-columns:1fr}.full{grid-column:1}}
+</style>
+</head>
+<body>
+<header class="top"><strong>☕ ScanBite — Menu Management</strong><nav><a href="/admin">Dashboard</a><a href="/menu">Customer Menu</a><a href="/admin/logout">Logout</a></nav></header>
+<main class="wrap">
+<section class="panel">
+<h2>Add Food Item</h2>
+<p class="muted">Changes made here are immediately reflected on the customer menu.</p>
+<form id="addForm" class="grid" enctype="multipart/form-data">
+<input id="name" name="name" placeholder="Food name" required>
+<select id="category" name="category_id" required></select>
+<input id="price" name="price" type="number" min="0" step="0.01" placeholder="Price" required>
+<input id="rating" name="rating" type="number" min="0" max="5" step="0.1" value="4.5" placeholder="Rating">
+<label class="upload-box" id="uploadBox" for="imageFile">
+<div class="upload-icon">📷</div>
+<div class="upload-title">Drag image here</div>
+<div class="upload-or">or</div>
+<span class="choose-btn">Choose Image</span>
+<input type="file" id="imageFile" name="image" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
+<div id="fileName" class="file-name"></div>
+<img id="imagePreview" class="image-preview" alt="Selected image preview">
+</label>
+<textarea id="description" name="description" class="full" placeholder="Description"></textarea>
+<button class="primary full" type="submit">Add Food</button>
+</form>
+</section>
+<section class="panel"><h2>Menu Items</h2><div class="table-wrap"><table><thead><tr><th>Image</th><th>Food</th><th>Category</th><th>Price</th><th>Rating</th><th>Available</th><th>Actions</th></tr></thead><tbody id="menuBody"><tr><td colspan="7">Loading...</td></tr></tbody></table></div></section>
+</main>
+<script>
+let categories=[];
+const addForm=document.getElementById('addForm');
+const imageFile=document.getElementById('imageFile');
+const uploadBox=document.getElementById('uploadBox');
+const imagePreview=document.getElementById('imagePreview');
+const fileName=document.getElementById('fileName');
+
+async function loadCategories(){
+ const response=await fetch('/api/admin/categories');
+ categories=await response.json();
+ document.getElementById('category').innerHTML=categories.filter(c=>c.is_active).map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+}
+async function loadMenu(){
+ const data=await (await fetch('/api/admin/menu')).json();
+ document.getElementById('menuBody').innerHTML=data.map(x=>`<tr><td><img src="/static/${x.image||'images/logo.png'}"></td><td>${x.name}</td><td>${x.category_name}</td><td>₹${Number(x.price).toFixed(2)}</td><td>⭐ ${x.rating}</td><td>${x.is_available?'Yes':'No'}</td><td><div class="actions"><button onclick='editItem(${JSON.stringify(x)})'>Edit</button><button class="danger" onclick="deleteItem(${x.id})">Delete</button></div></td></tr>`).join('')||'<tr><td colspan="7">No menu items</td></tr>';
+}
+function showSelectedImage(file){
+ if(!file) return;
+ if(!file.type.startsWith('image/')){alert('Please select an image file.');imageFile.value='';return;}
+ fileName.textContent=file.name;
+ const reader=new FileReader();
+ reader.onload=e=>{imagePreview.src=e.target.result;imagePreview.style.display='block';};
+ reader.readAsDataURL(file);
+}
+imageFile.addEventListener('change',()=>showSelectedImage(imageFile.files[0]));
+uploadBox.addEventListener('dragover',e=>{e.preventDefault();uploadBox.classList.add('dragover');});
+uploadBox.addEventListener('dragleave',()=>uploadBox.classList.remove('dragover'));
+uploadBox.addEventListener('drop',e=>{
+ e.preventDefault();uploadBox.classList.remove('dragover');
+ if(e.dataTransfer.files.length){try{const dt=new DataTransfer();dt.items.add(e.dataTransfer.files[0]);imageFile.files=dt.files;}catch(err){}showSelectedImage(e.dataTransfer.files[0]);}
+});
+addForm.addEventListener('submit',async e=>{
+ e.preventDefault();
+ const submit=e.target.querySelector('button[type="submit"]');submit.disabled=true;submit.textContent='Adding...';
+ try{
+  const formData=new FormData(addForm);
+  const r=await fetch('/api/admin/menu',{method:'POST',body:formData});
+  const d=await r.json();
+  if(!d.success){alert(d.message||'Could not add food.');return;}
+  addForm.reset();rating.value=4.5;fileName.textContent='';imagePreview.src='';imagePreview.style.display='none';
+  await loadMenu();alert('Food added successfully.');
+ }catch(err){alert('Something went wrong while adding the food.');}
+ finally{submit.disabled=false;submit.textContent='Add Food';}
+});
+async function editItem(x){const newName=prompt('Food name:',x.name);if(newName===null)return;const newPrice=prompt('Price:',x.price);if(newPrice===null)return;const newCategory=prompt('Category ID ('+categories.map(c=>c.id+': '+c.name).join(', ')+'):',x.category_id);if(newCategory===null)return;const available=confirm('Click OK if this item should be AVAILABLE. Click Cancel to mark it unavailable.');const r=await fetch('/api/admin/menu/'+x.id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({...x,name:newName,price:Number(newPrice),category_id:Number(newCategory),is_available:available})});const d=await r.json();if(!d.success)return alert(d.message);loadMenu();}
+async function deleteItem(id){if(!confirm('Delete this food item?'))return;const r=await fetch('/api/admin/menu/'+id,{method:'DELETE'});const d=await r.json();if(!d.success)return alert(d.message);loadMenu();}
+loadCategories().then(loadMenu);
+</script>
+</body></html>

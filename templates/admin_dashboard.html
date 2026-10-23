@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+```
+<title>ScanBite Admin Dashboard</title>
+
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/dashboard.css') }}">
+```
+
+</head>
+
+<body>
+
+<div class="dashboard-shell">
+
+```
+<!-- Header -->
+<header class="topbar">
+
+    <div>
+        <h1>☕ ScanBite</h1>
+        <p>Admin Dashboard</p>
+    </div>
+
+    <div class="top-links">
+        <a href="/kitchen">Kitchen View</a>
+        <a href="/admin/menu">Manage Menu</a>
+        <a href="/admin/inventory">Inventory</a>
+        <a href="/admin/logout">Logout</a>
+        <a href="/menu">Customer Menu</a>
+    </div>
+
+</header>
+
+
+<main class="content">
+
+    <!-- Statistics -->
+    <section class="stats">
+
+        <div class="stat">
+            <span>Total Orders</span>
+            <strong id="totalOrders">0</strong>
+        </div>
+
+        <div class="stat">
+            <span>Pending</span>
+            <strong id="pendingOrders">0</strong>
+        </div>
+
+        <div class="stat">
+            <span>Preparing</span>
+            <strong id="preparingOrders">0</strong>
+        </div>
+
+        <div class="stat">
+            <span>Revenue</span>
+            <strong id="revenue">₹0</strong>
+        </div>
+
+        <div class="stat"><span>Customers</span><strong id="customers">0</strong></div>
+        <div class="stat"><span>Today's Orders</span><strong id="todayOrders">0</strong></div>
+        <div class="stat"><span>Today's Sales</span><strong id="todayRevenue">₹0</strong></div>
+
+    </section>
+
+    <!-- Low Stock Alerts -->
+    <section class="panel low-stock-panel">
+        <div class="panel-heading low-stock-heading">
+            <div>
+                <h2>⚠️ Low Stock</h2>
+                <p>Ingredients that have reached or fallen below their minimum stock level.</p>
+            </div>
+            <a href="/admin/inventory" class="inventory-link">View Inventory</a>
+        </div>
+
+        <div id="lowStockList" class="low-stock-list">
+            <div class="low-stock-empty">Checking inventory...</div>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel-heading"><div><h2>Top Selling Items</h2><p>Based on completed and active orders</p></div></div>
+        <div class="table-wrap"><table><thead><tr><th>Food Item</th><th>Quantity Sold</th><th>Sales</th></tr></thead><tbody id="topItemsBody"><tr><td colspan="3">Loading...</td></tr></tbody></table></div>
+    </section>
+
+    <!-- Orders -->
+    <section class="panel">
+
+        <div class="panel-heading">
+
+            <div>
+                <h2>Orders</h2>
+                <p>Orders received from customers</p>
+            </div>
+
+            <button onclick="loadDashboard()">Refresh</button>
+
+        </div>
+
+
+        <div class="table-wrap">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Order</th>
+                        <th>Customer</th>
+                        <th>Table</th>
+                        <th>Items</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+
+                <tbody id="ordersBody">
+                    <tr>
+                        <td colspan="7">Loading...</td>
+                    </tr>
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+    <!-- Customers -->
+    <section class="panel">
+
+        <div class="panel-heading">
+
+            <div>
+                <h2>Customers</h2>
+                <p>Customer order details</p>
+            </div>
+
+        </div>
+
+
+        <div class="customer-bulk-actions" style="display:flex;align-items:center;gap:12px;margin:14px 0;">
+            <label style="display:flex;align-items:center;gap:8px;">
+                <input type="checkbox" id="selectAllCustomers" onchange="toggleAllCustomers(this.checked)">
+                Select all
+            </label>
+            <span id="selectedCustomerCount">0 selected</span>
+            <button type="button" class="delete-btn" onclick="deleteSelectedCustomers()">Delete Selected</button>
+        </div>
+
+        <div class="table-wrap">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Select</th>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>Email</th>
+                        <th>Orders</th>
+                        <th>Total Spent</th>
+                         <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody id="customersBody">
+                    <tr>
+                        <td colspan="7">Loading...</td>
+                    </tr>
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+</main>
+```
+
+</div>
+
+<script>
+
+function escapeHtml(value) {
+    return String(value ?? "").replace(/[&<>"']/g, m => ({
+        "&":"&amp;", "<":"&lt;", ">":"&gt;", "\"":"&quot;", "'":"&#039;"
+    }[m]));
+}
+
+async function loadDashboard() {
+
+    const response = await fetch("/api/dashboard");
+
+    const data = await response.json();
+
+
+    // Show statistics
+
+    document.getElementById("totalOrders").innerText =
+        data.stats.total_orders;
+
+    document.getElementById("pendingOrders").innerText =
+        data.stats.pending;
+
+    document.getElementById("preparingOrders").innerText =
+        data.stats.preparing;
+
+    document.getElementById("revenue").innerText =
+        "₹" + data.stats.revenue;
+
+    document.getElementById("customers").innerText = data.stats.customers;
+    document.getElementById("todayOrders").innerText = data.stats.today_orders;
+    document.getElementById("todayRevenue").innerText = "₹" + Number(data.stats.today_revenue).toFixed(2);
+
+
+    // Show low-stock alerts
+    const lowStockList = document.getElementById("lowStockList");
+    const lowStockItems = data.low_stock || [];
+
+    if (lowStockItems.length === 0) {
+        lowStockList.innerHTML = `
+            <div class="low-stock-empty success-stock">
+                ✓ All ingredients are sufficiently stocked.
+            </div>`;
+    } else {
+        lowStockList.innerHTML = lowStockItems.map(item => {
+            const out = item.stock_alert === "Out of Stock";
+            return `
+                <div class="low-stock-row ${out ? "out-stock" : "low-stock"}">
+                    <div class="low-stock-name">
+                        <strong>${escapeHtml(item.name)}</strong>
+                        <span>Minimum: ${Number(item.min_quantity).toLocaleString(undefined,{maximumFractionDigits:3})} ${escapeHtml(item.unit)}</span>
+                    </div>
+                    <div class="low-stock-quantity">
+                        <strong>${Number(item.quantity).toLocaleString(undefined,{maximumFractionDigits:3})} ${escapeHtml(item.unit)}</strong>
+                        <span>${escapeHtml(item.stock_alert)}</span>
+                    </div>
+                </div>`;
+        }).join("");
+    }
+
+
+    // Show orders
+
+    let ordersHTML = "";
+
+    for (let order of data.orders) {
+
+        let items = "";
+
+        for (let item of order.items) {
+
+            items += item.item_name +
+                     " x " +
+                     item.quantity +
+                     "<br>";
+
+        }
+
+        ordersHTML += `
+            <tr>
+
+                <td>#${order.order_no}</td>
+
+                <td>
+                    ${order.customer_name}<br>
+                    ${order.phone}
+                </td>
+
+                <td>${order.table_number}</td>
+
+                <td>${items}</td>
+
+                <td>₹${order.total}</td>
+
+                <td>${order.status}</td>
+
+                <td>${order.created_at}</td>
+
+            </tr>
+        `;
+    }
+
+
+    if (ordersHTML === "") {
+
+        ordersHTML =
+            "<tr><td colspan='7'>No orders found</td></tr>";
+
+    }
+
+    document.getElementById("ordersBody").innerHTML =
+        ordersHTML;
+
+
+    let topHTML = "";
+    for (let item of (data.top_items || [])) {
+        topHTML += `<tr><td>${item.item_name}</td><td>${item.quantity}</td><td>₹${Number(item.sales).toFixed(2)}</td></tr>`;
+    }
+    document.getElementById("topItemsBody").innerHTML = topHTML || "<tr><td colspan='3'>No sales yet</td></tr>";
+
+    // Show customers
+
+let customersHTML = "";
+
+for (let customer of data.customers) {
+
+    customersHTML += `
+        <tr>
+            <td><input type="checkbox" class="customer-checkbox" value="${customer.id}" onchange="updateSelectedCustomerCount()" aria-label="Select customer ${escapeHtml(customer.name)}"></td>
+            <td>${escapeHtml(customer.name)}</td>
+            <td>${escapeHtml(customer.phone)}</td>
+            <td>${escapeHtml(customer.email || "-")}</td>
+            <td>${customer.order_count}</td>
+            <td>₹${Number(customer.total_spent).toFixed(2)}</td>
+            <td>
+                <button class="delete-btn" onclick="deleteCustomer(${customer.id}, this)">Delete</button>
+            </td>
+        </tr>
+    `;
+
+}
+
+
+    if (customersHTML === "") {
+
+        customersHTML =
+            "<tr><td colspan='7'>No customers found</td></tr>";
+
+    }
+
+    document.getElementById("customersBody").innerHTML =
+        customersHTML;
+    const selectAll = document.getElementById("selectAllCustomers");
+    if (selectAll) selectAll.checked = false;
+    updateSelectedCustomerCount();
+}
+
+
+// Load dashboard when page opens
+
+loadDashboard();
+
+function getSelectedCustomerIds() {
+    return Array.from(document.querySelectorAll(".customer-checkbox:checked"))
+        .map(input => Number(input.value));
+}
+
+function toggleAllCustomers(checked) {
+    document.querySelectorAll(".customer-checkbox").forEach(input => {
+        input.checked = checked;
+    });
+    updateSelectedCustomerCount();
+}
+
+function updateSelectedCustomerCount() {
+    const selected = getSelectedCustomerIds();
+    const count = document.getElementById("selectedCustomerCount");
+    if (count) count.textContent = `${selected.length} selected`;
+    const boxes = Array.from(document.querySelectorAll(".customer-checkbox"));
+    const selectAll = document.getElementById("selectAllCustomers");
+    if (selectAll) selectAll.checked = boxes.length > 0 && boxes.every(box => box.checked);
+}
+
+async function deleteSelectedCustomers() {
+    const customerIds = getSelectedCustomerIds();
+    if (customerIds.length === 0) {
+        alert("Please select at least one customer.");
+        return;
+    }
+    if (!confirm(`Delete ${customerIds.length} selected customer(s) and their order history? This cannot be undone.`)) return;
+
+    try {
+        const response = await fetch("/api/customers/bulk-delete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ customer_ids: customerIds })
+        });
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.message || "Unable to delete selected customers.");
+        alert(`${result.deleted_count} customer(s) deleted successfully.`);
+        await loadDashboard();
+    } catch (error) {
+        alert(error.message || "Something went wrong while deleting customers.");
+        console.error(error);
+    }
+}
+
+async function deleteCustomer(customerId, button) {
+
+    const customerName = button.closest("tr").children[1].textContent.trim();
+    const confirmed = confirm(
+        `Are you sure you want to delete ${customerName}?\n\n` +
+        `This will also delete their order history and ordered food items.`
+    );
+
+    if (!confirmed) {
+        return;
+    }
+
+    try {
+
+        const response = await fetch(
+            `/api/customers/${customerId}`,
+            {
+                method: "DELETE"
+            }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+            alert(result.message || "Failed to delete customer.");
+            return;
+        }
+
+        alert("Customer deleted successfully.");
+
+        // Refresh dashboard
+        loadDashboard();
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert("Something went wrong while deleting the customer.");
+
+    }
+}
+
+</script>
+
+</body>
+</html>

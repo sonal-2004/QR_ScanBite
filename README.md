@@ -1,4 +1,4 @@
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/11ad8667-efcf-45c6-a459-b949fb2ed999" /># ScanBite — QR Cafe Ordering and Management
+# ScanBite — QR Cafe Ordering and Management
 
 ScanBite is a Flask + SQLite web application for QR-based cafe ordering, menu administration, kitchen order tracking, and ingredient inventory management.
 

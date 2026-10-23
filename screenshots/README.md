@@ -1,0 +1,1 @@
+**ScanBite application screenshots**
